@@ -61,22 +61,37 @@ def make_time_button():
 @handler.add(MessageEvent)
 def handle_message(event):
     if event.message.text == "設定":
-        button = make_time_button()
-        line_bot_api.reply_message(
-            event.reply_token,
-            button 
-        )
+        room = Room.query.filter_by(group_id=event.source.group_id).first()
+        if room.time is None:
+            button = make_time_button()
+            line_bot_api.reply_message(
+                    event.reply_token,
+                    button 
+                    )
+        else:
+            line_bot_api.reply_message(
+                    event.reply_token,
+                    TextSendMessage(text="待ち合わせは"+str(room.time)+"です") 
+                    )
+
     elif event.message.text == "結果":
         line_bot_api.reply_message(
                 event.reply_token,
                 TextSendMessage(text="お疲れ様でした。失礼します。")
                 )
+        room = Room.query.filter_by(group_id=event.source.group_id).first()
+        db.session.delete(room)
+        db.session.commit()
         line_bot_api.leave_group(event.source.group_id)
 
 @handler.add(PostbackEvent)
 def handler_PostbackEvent(event):
     pick_time = event.postback.params["datetime"]
-    
+    room = Room.query.filter_by(group_id=event.source.group_id).first()
+    room.time = datetime.datetime.strptime(pick_time, '%Y-%m-%dT%H:%M')
+    db.session.add(room)
+    db.session.commit()
+
     line_bot_api.reply_message(
     event.reply_token,
     TextSendMessage(text="待ち合わせ日時は"+pick_time+"に設定しました")
