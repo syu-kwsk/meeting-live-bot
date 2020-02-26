@@ -8,7 +8,7 @@ from linebot.exceptions import (
         InvalidSignatureError
         )
 from linebot.models import (
-        MessageEvent, TextMessage, TextSendMessage
+        MessageEvent, TextMessage, TextSendMessage, TemplateSendMessage, ButtonsTemplate, MessageAction, DatetimePickerAction, PostbackEvent
         )
 import os
 import random
@@ -37,14 +37,34 @@ def callback():
 
     return 'OK'
 
+def make_time_button():
+    buttons_template_message = TemplateSendMessage(
+        alt_text='Buttons template',
+        template=ButtonsTemplate(
+        thumbnail_image_url='https://1.bp.blogspot.com/-RJRt_Hv37Kk/VMIu-CCBpII/AAAAAAAAq2E/JsIJ8pPwmuY/s400/calender_takujou.png',
+        title='Meeting Time',
+        text='Please select',
+        actions=[
+            DatetimePickerAction(
+                label='pick date',
+                data='hoge=1', 
+                mode='datetime'
+            ),
+        ]
+        )
+    )
+
+    return buttons_template_message
 
 @handler.add(MessageEvent)
 def handle_message(event):
-    msg = TextSendMessage(text=event.message.text)
-    line_bot_api.reply_message(
+    if event.message.text == "設定":
+        button = make_time_button()
+        line_bot_api.reply_message(
             event.reply_token,
-            msg
-            )
+            button 
+        )
+
 if __name__ == "__main__":
     #    app.run()
     port = int(os.getenv("PORT", 5000))
