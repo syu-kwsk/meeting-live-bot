@@ -1,5 +1,7 @@
 from flask import Flask, request, abort
-from mybot import app
+from mybot import app, db
+from mybot.models import Room
+import datetime
 
 from linebot import (
         LineBotApi, WebhookHandler
@@ -8,7 +10,7 @@ from linebot.exceptions import (
         InvalidSignatureError
         )
 from linebot.models import (
-        MessageEvent, TextMessage, TextSendMessage, TemplateSendMessage, ButtonsTemplate, MessageAction, DatetimePickerAction, PostbackEvent
+        MessageEvent, TextMessage, TextSendMessage, TemplateSendMessage, ButtonsTemplate, MessageAction, DatetimePickerAction, PostbackEvent, JoinEvent
         )
 import os
 import random
@@ -64,18 +66,41 @@ def handle_message(event):
             event.reply_token,
             button 
         )
+    elif event.message.text == "結果":
+        line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(text="お疲れ様でした。失礼します。")
+                )
+        line_bot_api.leave_group(event.source.group_id)
 
 @handler.add(PostbackEvent)
 def handler_PostbackEvent(event):
     pick_time = event.postback.params["datetime"]
+    
     line_bot_api.reply_message(
     event.reply_token,
     TextSendMessage(text="待ち合わせ日時は"+pick_time+"に設定しました")
     )    
 
+@handler.add(JoinEvent)
+def handle_join(event):
+    msg = []
+    msg.append(TextSendMessage(text="こんにちは"))
+    msg.append(TextSendMessage(text=event.source.group_id))
+    room = Room.query.filter_by(group_id=event.source.group_id).first()
+    if room is None:
+        room = Room(group_id=event.source.group_id) 
+    
+    db.session.add(room)
+    db.session.commit()
+    msg.append(TextSendMessage(text="GroupIdを保存しました"))
+
+    line_bot_api.reply_message(
+            event.reply_token,
+            msg
+            )
+
 if __name__ == "__main__":
     #    app.run()
     port = int(os.getenv("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
-
-
