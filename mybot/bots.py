@@ -94,7 +94,13 @@ def handle_message(event):
         db.session.delete(room)
         db.session.commit()
         line_bot_api.leave_group(event.source.group_id)
-
+    elif event.message.text == "ついた":
+        profile = line_bot_api.get_profile(event.source.user_id)
+        line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(text="おおっと、"+profile.display_name+"さんが到着しました！")
+                )
+        
     else:
         user_time = event.timestamp / 1000
         meeting_time = room.time.timestamp()
