@@ -58,10 +58,22 @@ def make_time_button():
 
     return buttons_template_message
 
+def judgeTime(dt, time):
+	if dt < time:
+		message = '遅刻'
+	
+	elif dt == time:
+		message = "ジャスト"
+	
+	elif dt > time:
+		message = "順調"
+
+	return message
+
 @handler.add(MessageEvent)
 def handle_message(event):
+    room = Room.query.filter_by(group_id=event.source.group_id).first()
     if event.message.text == "設定":
-        room = Room.query.filter_by(group_id=event.source.group_id).first()
         if room.time is None:
             button = make_time_button()
             line_bot_api.reply_message(
@@ -79,10 +91,20 @@ def handle_message(event):
                 event.reply_token,
                 TextSendMessage(text="お疲れ様でした。失礼します。")
                 )
-        room = Room.query.filter_by(group_id=event.source.group_id).first()
         db.session.delete(room)
         db.session.commit()
         line_bot_api.leave_group(event.source.group_id)
+
+    else:
+        user_time = event.timestamp / 1000
+        meeting_time = room.time.timestamp()
+        print(user_time, meeting_time)
+        message = judgeTime(meeting_time, user_time)
+
+        line_bot_api.reply_message(
+		event.reply_token,
+		TextSendMessage(text=message)
+                )
 
 @handler.add(PostbackEvent)
 def handler_PostbackEvent(event):
