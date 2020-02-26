@@ -58,17 +58,21 @@ def make_time_button():
 
     return buttons_template_message
 
-def judgeTime(dt, time):
-	if dt < time:
-		message = '遅刻'
-	
-	elif dt == time:
-		message = "ジャスト"
-	
-	elif dt > time:
-		message = "順調"
+def judgeTime(meeting_time, user_time):
+    msgs = []
+    time_diff = abs(meeting_time - user_time) / 60
 
-	return message
+    if meeting_time < user_time:
+        msgs.append(TextSendMessage(text='遅刻'))        
+        msgs.append(TextSendMessage(text='超過時間は'+str(time_diff)+"分！"))
+    elif meeting_time == user_time:
+        msgs.append(TextSendMessage(text='ジャスト'))
+
+    elif meeting_time > user_time:
+        msgs.append(TextSendMessage(text='順調'))
+        msgs.append(TextSendMessage(text='待ち合わせまであと'+str(time_diff)+"分！"))
+
+    return msgs
 
 @handler.add(MessageEvent)
 def handle_message(event):
@@ -104,12 +108,10 @@ def handle_message(event):
     else:
         user_time = event.timestamp / 1000
         meeting_time = room.time.timestamp()
-        print(user_time, meeting_time)
         message = judgeTime(meeting_time, user_time)
-
         line_bot_api.reply_message(
 		event.reply_token,
-		TextSendMessage(text=message)
+		message
                 )
 
 @handler.add(PostbackEvent)
