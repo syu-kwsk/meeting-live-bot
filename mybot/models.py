@@ -15,9 +15,10 @@ class User(db.Model):
     user_id = db.Column(db.Text)
     name = db.Column(db.Integer)
     rank = db.Column(db.Integer, nullable=True)
+    arrive_time = db.Column(db.DateTime, nullable=True)
     room_id = db.Column(db.Integer, db.ForeignKey('room.id'), nullable=False)
     def __repr__(self):
-        return "<userId={} groupId={} name={} rank={}>".format(self.user_id, self.room_id, self.name, self.rank)
+        return "<userId={} groupId={} name={} rank={} arrive_time={}>".format(self.user_id, self.room_id, self.name, self.ranki, self.arrive_time)
 
 def init():
     db.create_all()

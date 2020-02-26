@@ -91,10 +91,19 @@ def handle_message(event):
                     )
 
     elif event.message.text == "結果":
+        message = ""
+        users = User.query.order_by(User.rank).all()
+        for user in users:
+            message += str(user.rank) + "位は" + user.name + "さん！\n"
+
+        start = users[0].arrive_time.timestamp()
+        end = users[-1].arrive_time.timestamp()
+        message += "全員が集まるまでにかかった時間はなんと\n" + str((end - start) / 60) + "\n分!!\n"
+
         line_bot_api.reply_message(
-                event.reply_token,
-                TextSendMessage(text="お疲れ様でした。失礼します。")
-                )
+            event.reply_token,
+            TextSendMessage(text= message + "お疲れ様でした。失礼します。")
+        )
         for user in room.users:
             db.session.delete(user)
             db.session.commit()
@@ -102,14 +111,15 @@ def handle_message(event):
         db.session.delete(room)
         db.session.commit()
         line_bot_api.leave_group(event.source.group_id)
+    
     elif event.message.text == "ついた":
         profile = line_bot_api.get_profile(event.source.user_id)
         msgs = []
         user = User.query.filter_by(user_id=profile.user_id).first()
 
         if user is None:
-            user = User(user_id=profile.user_id, name=profile.display_name, rank=len(room.users)+1, room=room)
-            msgs.append(TextSendMessage(text="おおっと、"+user.name+"さんが到着しました！\n順位は"+str(user.rank)+"だ！")
+            user = User(user_id=profile.user_id, name=profile.display_name, rank=len(room.users)+1, room=room, arrive_time = datetime.datetime.fromtimestamp(event.timestamp / 1000))
+            msgs.append(TextSendMessage(text="おおっと、"+user.name+"さんが到着しました！\n順位は"+str(user.rank)+"位だ！")
 )
             msgs +=judgeTime(room.time.timestamp(), (event.timestamp)/1000)
 
