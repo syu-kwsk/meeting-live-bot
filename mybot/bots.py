@@ -65,6 +65,14 @@ def handle_message(event):
             button 
         )
 
+@handler.add(PostbackEvent)
+def handler_PostbackEvent(event):
+    pick_time = event.postback.params["datetime"]
+    line_bot_api.reply_message(
+    event.reply_token,
+    TextSendMessage(text="待ち合わせ日時は"+pick_time+"に設定しました")
+    )    
+
 if __name__ == "__main__":
     #    app.run()
     port = int(os.getenv("PORT", 5000))
