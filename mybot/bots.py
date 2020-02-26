@@ -1,6 +1,6 @@
 from flask import Flask, request, abort
 from mybot import app, db
-from mybot.models import Room
+from mybot.models import Room, User
 import datetime
 
 from linebot import (
@@ -95,14 +95,32 @@ def handle_message(event):
                 event.reply_token,
                 TextSendMessage(text="お疲れ様でした。失礼します。")
                 )
+        for user in room.users:
+            db.session.delete(user)
+            db.session.commit()
+
         db.session.delete(room)
         db.session.commit()
         line_bot_api.leave_group(event.source.group_id)
     elif event.message.text == "ついた":
         profile = line_bot_api.get_profile(event.source.user_id)
+        msgs = []
+        user = User.query.filter_by(user_id=profile.user_id).first()
+
+        if user is None:
+            user = User(user_id=profile.user_id, name=profile.display_name, rank=len(room.users)+1, room=room)
+            msgs.append(TextSendMessage(text="おおっと、"+user.name+"さんが到着しました！\n順位は"+str(user.rank)+"だ！")
+)
+            msgs +=judgeTime(room.time.timestamp(), (event.timestamp)/1000)
+
+        else:
+            msgs.append(TextSendMessage(text="すでに到着しているぅ！"))
+
+        db.session.add(user)
+        db.session.commit()
         line_bot_api.reply_message(
                 event.reply_token,
-                TextSendMessage(text="おおっと、"+profile.display_name+"さんが到着しました！")
+                msgs
                 )
         
     else:
