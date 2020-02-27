@@ -13,7 +13,7 @@ class Room(db.Model):
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Text)
-    name = db.Column(db.Integer)
+    name = db.Column(db.Text)
     rank = db.Column(db.Integer, nullable=True)
     arrive_time = db.Column(db.DateTime, nullable=True)
     room_id = db.Column(db.Integer, db.ForeignKey('room.id'), nullable=False)
