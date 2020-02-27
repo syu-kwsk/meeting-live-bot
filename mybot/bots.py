@@ -61,16 +61,28 @@ def make_time_button():
 def judgeTime(meeting_time, user_time):
     msgs = []
     time_diff = abs(meeting_time - user_time) / 60
+    h = time_diff // 3600
+    m = time_diff // 60
+    s = int(time_diff % 60)
+
+    time_str = ""
+
+    if h > 0:
+        time_str += f"{h}時間"
+    if m > 0:
+        time_str += f"{m}分"
+    if s > 0:
+        time_str += f"{s}秒"
 
     if meeting_time < user_time:
         msgs.append(TextSendMessage(text='遅刻'))        
-        msgs.append(TextSendMessage(text='超過時間は'+str(time_diff)+"分！"))
+        msgs.append(TextSendMessage(text='超過時間は'+time_str))
     elif meeting_time == user_time:
         msgs.append(TextSendMessage(text='ジャスト'))
 
     elif meeting_time > user_time:
         msgs.append(TextSendMessage(text='順調'))
-        msgs.append(TextSendMessage(text='待ち合わせまであと'+str(time_diff)+"分！"))
+        msgs.append(TextSendMessage(text='待ち合わせまであと'+time_str))
 
     return msgs
 
