@@ -102,7 +102,7 @@ def handle_message(event):
 
         line_bot_api.reply_message(
             event.reply_token,
-            TextSendMessage(text= message + "お疲れ様でした。失礼します。")
+            TextSendMessage(text= message + "お疲れ様でした！失礼します。")
         )
         for user in room.users:
             db.session.delete(user)
