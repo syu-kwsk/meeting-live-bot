@@ -44,11 +44,11 @@ def make_time_button():
         alt_text='Buttons template',
         template=ButtonsTemplate(
         thumbnail_image_url='https://1.bp.blogspot.com/-RJRt_Hv37Kk/VMIu-CCBpII/AAAAAAAAq2E/JsIJ8pPwmuY/s400/calender_takujou.png',
-        title='Meeting Time',
-        text='Please select',
+        title='待ち合わせ日時',
+        text='いつ集まりますか？',
         actions=[
             DatetimePickerAction(
-                label='pick date',
+                label='設定する',
                 data='hoge=1', 
                 mode='datetime'
             ),
