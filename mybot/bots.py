@@ -1,6 +1,7 @@
 from flask import Flask, request, abort
 from mybot import app, db
 from mybot.models import Room, User
+from mybot.message import guide_msg
 import datetime
 
 from linebot import (
@@ -118,7 +119,7 @@ def handle_message(event):
         if not users:
             line_bot_api.reply_message(
                 event.reply_token,
-                TextSendMessage(text= "結果はまだわからない！！")
+                TextSendMessage(text=guide_msg["notarrive"])
             )
             
         else:
@@ -153,7 +154,7 @@ def handle_message(event):
             msgs += judgeTime(room.time.timestamp(), (event.timestamp)/1000)
 
         else:
-            msgs.append(TextSendMessage(text="すでに到着しているぅ！\n集合したら「結果」をお願いします！"))
+            msgs.append(TextSendMessage(text=guide_msg["arrived"]))
 
         db.session.add(user)
         db.session.commit()
@@ -164,15 +165,17 @@ def handle_message(event):
         
     else:
         if room.time is None:
-            message = "待ち合わせ実況botです。\n"+"「設定」で待ち合わせ時間をグループに知らせてください"
+            message = guide_msg["start"]
+            message = TextSendMessage(text=message)
         else:
             user_time = event.timestamp / 1000
             meeting_time = room.time.timestamp()
             message = judgeTime(meeting_time, user_time)
-            line_bot_api.reply_message(
-	        event.reply_token,
-		message
-            )
+        
+        line_bot_api.reply_message(
+	    event.reply_token,
+            message
+        )
 
 @handler.add(PostbackEvent)
 def handler_PostbackEvent(event):
@@ -190,7 +193,7 @@ def handler_PostbackEvent(event):
 @handler.add(JoinEvent)
 def handle_join(event):
     msg = []
-    msg.append(TextSendMessage(text="待ち合わせ実況botです。\n"+"「設定」で待ち合わせ時間をグループに知らせてください")
+    msg.append(TextSendMessage(text=guide_msg["join"])
             )
     #msg.append(TextSendMessage(text=event.source.group_id))
     room = Room.query.filter_by(group_id=event.source.group_id).first()
