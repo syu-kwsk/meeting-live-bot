@@ -115,7 +115,7 @@ def handle_message(event):
         message = ""
         users = User.query.order_by(User.rank).all()
 
-        if users is None:
+        if not users:
             line_bot_api.reply_message(
                 event.reply_token,
                 TextSendMessage(text= "結果はまだわからない！！")
